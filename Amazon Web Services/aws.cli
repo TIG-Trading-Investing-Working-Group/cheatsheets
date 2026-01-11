@@ -1,0 +1,54 @@
+#--------------------------------------------------------------------
+#              awscli | cheat tips                                  |
+#--------------------------------------------------------------------
+
+# Display Topic Guide (list of hidden topics):
+$ aws help topics
+
+# Display s3 topics (special configuration variables and parameters):
+$ aws help s3-config
+
+# Display awscli special configuration variables:
+$ aws help config-vars
+
+# Display menu of awscli return codes and their definitions:
+$ aws help return-codes
+
+# Display hidden FAQ for s3:
+$ aws help s3-faq
+
+# Display AWS api access key for the default iam user:
+$ aws configure get default.aws_access_key_id
+
+# Display AWS api secret access key for the iam user "david_chow":
+$ aws configure get david_chow.aws_access_key_id
+
+
+# --- awscli aliases ------------------------------------------------
+
+# install cli aliases:
+$ git clone https://github.com/awslabs/awscli-aliases
+$ cp alias ~/.aws/cli/
+
+# caller iam identity
+$ aws whoami
+
+# localhost external (Internet) ip:
+$ aws myip
+
+# EBS volume list
+$ aws ebs-volumes
+
+# List of EC2 Amazon Linux AMIs:
+$ aws amazon-linux-amis
+
+# List of security groups:
+$ aws list-sgs
+
+# Add localhost IP to security group to allow login:
+$ aws authorize-my-ip
+
+# Add localhost IP to security group by name:
+$ aws authorize-my-ip-by-name
+
+

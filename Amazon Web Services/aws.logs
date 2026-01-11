@@ -1,0 +1,47 @@
+#--------------------------------------------------------------------
+#              awscli | cloudwatch logs                             |
+#--------------------------------------------------------------------
+
+## Extract pattern from Log Group based on Event Source + UserName:  ##
+$ aws logs filter-log-events \
+    --profile gcreds-atos-gen-ra1-dev \        
+    --log-group-name 166340714322-CloudTrail \
+    --region eu-west-1 \
+    --filter-pattern "{\$.eventSource = storagegateway.amazonaws.com && \$.userIdentity.arn = "*A469005"}" > ~/Downloads/storagegateway-events.json
+
+## Extract pattern from Log Group based on user ID:  ##
+$ aws logs filter-log-events \
+    --profile gcreds-atos-gen-caa \
+    --region eu-west-1 \
+    --log-group-name 082761123140-CloudTrail \
+    --filter-pattern "{\$.userIdentity.arn = "*A469005"}" > A469005-CAA.json
+
+
+## Extract pattern from 1 stream based on Event Source + UserName: ##
+    $ aws logs --profile gcreds-atos-gen-ra1-dev --region eu-west-1 filter-log-events --log-group-name 166340714322-CloudTrail --log-stream-names 166340714322_CloudTrail_eu-west-1 --filter-pattern "{\$.eventSource = storagegateway.amazonaws.com && \$.userIdentity.arn = "*A630616"}" > ~/Downloads/storagegateway-events.json
+
+## Extract a time pattern: ##
+start=$(date -d"$(sed 's# #/#;s# #/#' <<< "12 08 2017 01:59:00")" "+%s")
+end=$(date -d"$(sed 's# #/#;s# #/#' <<< "12 09 2017 01:59:00")" "+%s")
+
+START=$(( $start * 1000 ))    # milliseconds
+END=$(( $end * 1000 ))        # milliseconds
+
+    $ aws logs filter-log-events --profile gcreds-atos-gen-ra1-dev \
+        --log-group-name 166340714322-CloudTrail \
+        --region eu-west-1 \
+        --start-time $START  \
+        --end-time $END
+
+
+## Install cloudwatch logs agent on host instance external to AWS:   ##
+# http://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/QuickStartEC2Instance.html
+    1. # Download logs agent:
+       $ curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
+
+    2. $ curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/AgentDependencies.tar.gz -O
+
+    3. $ tar xvf 'AgentDependencies.tar.gz' -C /tmp/
+
+    4. # run setup script:
+       $ sudo python ./awslogs-agent-setup.py --region 'us-east-1' --dependency-path '/tmp/AgentDependencies'

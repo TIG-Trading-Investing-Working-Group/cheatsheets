@@ -1,0 +1,99 @@
+#--------------------------------------------------------------------
+#                awscli | kms                                       |
+#--------------------------------------------------------------------
+
+
+# Encrypt a File via cli (base 64*, ciphertext blob):
+
+    $ aws kms encrypt \
+        --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
+        --plaintext fileb://plaintext-file.txt \
+        --output text --query CiphertextBlob | base64 \
+        --decode > encrypted-data-file.txt
+
+# Decrypt a File via cli (base 64*, ciphertext blob):
+
+    $ aws kms decrypt \
+        --ciphertext-blob fileb://Encrypted-data.txt \
+        --output text \
+        --query Plaintext | base64 \
+        --decode > unencrypted-plaintext.txt
+
+# Encrypt a String (base 64*, ciphertext blob) to stdout:
+
+    $ aws kms encrypt \
+        --key-id 1234abcd-12ab-34cd-56ef-1234567890ab \
+        --plaintext "string-to-encrypt-goes-here" \
+        --output text --query CiphertextBlob | base64 \
+        --decode 
+
+#   * result of a successful encrypt/ decrypt operation is base 64 \
+#     encoded data. In order to use this, must convert (decode) to base 10
+
+
+# --- Encrypt Using Envelope Key ----------------------------------------------
+
+
+# Step 1: generate a key encrypted with envelope kms key:
+    $ aws kms generate-data-key \
+        --key-id arn:aws:kms:eu-west-1:ACCID:key/KEYUID  \
+        --key-spec AES_256 \
+        --output text \
+        --query CiphertextBlob | base64 \
+        --decode > EncryptedEnvelopeKey
+
+# Step 2: Decrypt the ciphertext key:
+    $ PlaintextEnvelopeKey=$(aws kms decrypt --ciphertext-blob \
+        fileb://EncryptedEnvelopeKey --output text --query Plaintext)
+
+# Step3: Encrypt data to be protected with ciphertext key. Tool of choice
+#        (openssl, gpg, etc):
+    $ $openssl enc -in plaintext-data.txt -out encrypted-data.txt -e -aes256 -k $PlaintextEnvelopeKey
+    $ unset PlaintextEnvelopeKey (to remove key from local memory)
+
+
+# --- Decrypt Using Envelope Key ----------------------------------------------
+
+
+    # Step 1:
+        $ PlaintextEnvelopeKey=$(aws kms decrypt --ciphertext-blob fileb://
+                EncryptedEnvelopeKey --output text --query Plaintext)
+
+    # Step 2:
+        $ openssl enc -in encrypted-data.txt -out plaintext-data.txt -d -aes256 -k $plainkey
+        $ unset plainkey
+
+
+# -- KMS Grants ---------------------------------------------------------------
+
+
+# Create a new KMS key and make a note of the region you are working in
+    $ aws kms create-key
+
+# Test encrypting plain text using my new key:
+    $ aws kms encrypt --plaintext "hello" --key-id <key_arn>
+
+# Create a new user called Dave and generate access key / secret access key
+    $ aws iam create-user --user-name dave
+    $ aws iam create-access-key --user-name dave
+
+# Run aws configure using Dave's credentials creating a CLI profile for him
+    $ aws configure --profile dave
+    $ aws kms encrypt --plaintext "hello" --key-id <key_arn> --profile dave
+
+# Create a grant for user called Dave
+    $ aws iam get-user --user-name dave
+    $ aws kms create-grant --key-id <key_arn> --grantee-principal <Dave's_arn> --operations "Encrypt"
+
+# Encrypt plain text as user Dave:
+    $ aws kms encrypt --plaintext "hello" --key-id <key_arn> --grant-tokens <grant_token_from_previous_command> --profile dave
+
+# Revoke the grant:
+    $ aws kms list-grants --key-id <key_arn>
+    $ aws kms revoke-grant --key-id <key_arn> --grant-id <grant_id>
+
+# Check that the revoke was successful:
+    $ aws kms encrypt --plaintext "hello" --key-id <key_arn> --profile dave
+
+    https://docs.aws.amazon.com/cli/latest/reference/kms/create-grant.html
+

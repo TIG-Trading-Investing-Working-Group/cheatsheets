@@ -1,0 +1,72 @@
+#--------------------------------------------------------------------
+#                awscli | s3                                        |
+#--------------------------------------------------------------------
+
+# Get bucket lifecycle rule(s)
+$ aws s3api get-bucket-lifecycle --bucket <bucket_name>
+
+# Total size of all objects in bucket:
+$ aws s3 ls s3://<bucketname> --recursive --summarize --human-readable
+
+# Multi-part Upload (kms encryption)
+$ aws s3 cp <DirName> s3://<BUCKETNAME>/<DirName>/  \
+    --recursive  \
+    --sse "aws:kms"  \
+    --sse-kms-key-id <KMS_KEY_ID>  \
+    --region us-west-2
+
+ Note:  If DirName not used as key in s3, 
+        ALL OBJECTS WILL BE COPIED TO THE ROOT OF THE BUCKET NAMESPACE
+
+# Set S3 Signature Version in Request Authentication:
+
+    # default iam user:
+    aws configure set default.s3.signature_version s3v4
+
+    # custom profile:
+    aws configure set profile.<profilename>.s3.signature_version s3v4
+
+#
+# --- boto3 -------------------------------------------------------------------
+#
+
+# LIST OBJECTS
+>>> client = boto3.client('s3')
+>>> client.list_objects(Bucket='mybucket01')
+
+# UPLOAD FILE  
+>>> client.upload_file('myfile.txt', 'aws01-storage_bucket', 'myfile.txt')
+
+# UPLOAD FILE OBJECT (binary)
+The upload_fileobj method accepts a readable file-like object. 
+The file object must be opened in binary mode, not text mode.
+
+>>> s3 = boto3.client('s3')
+>>> with open("FILE_NAME", "rb") as f:
+>>>     s3.upload_fileobj(f, "BUCKET_NAME", "OBJECT_NAME")
+
+# Download object from S3 bucket
+>>> s3 = boto3.resource('s3')
+>>> files = ['myfile1.txt', 'spotprices.json', 'weather_data.json']
+
+>>> for f in files:
+>>>      s3.meta.client.download_file('aws01-storage', f, '/tmp/{}'.format(f))
+
+# Delete objects from S3 bucket
+>>> session = boto3.Session(profile_name='gcreds-da') 
+>>> client = session.client('s3') 
+
+>>> for f in files: 
+>>>     client.delete_object(Bucket='aws01-storage', Key=f) 
+
+#
+# ---  Restoring Objects from Amazon S3 ---------------------------------------
+#
+
+# Use s3cmd instead of awscli with the following switches:
+
+$  s3cmd restore --recursive  s3://glacier-permanent/2017-11-24_WindowsXP --restore-days=30 --restore-priority=bulk
+
+#  This will restore the files from glacier, but you will not be able to dowhload them yet (WTF).
+
+# Download restored files:

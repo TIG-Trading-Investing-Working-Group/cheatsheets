@@ -1,0 +1,15 @@
+#--------------------------------------------------------------------
+#              amazonlinux | cheat tips                             |
+#--------------------------------------------------------------------
+
+# Amazon Linux 2 -- Install EPEL
+    
+    $ wget -O epel.rpm –nv 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm'
+    $ sudo yum install -y ./epel.rpm
+
+# Amazon Linux 2 - Add Python3
+    $ sudo amazon-linux-extras install python3
+
+# Amazon Linux 2 - Add Graphical Desktop + VNC
+
+##

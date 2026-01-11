@@ -1,0 +1,32 @@
+#--------------------------------------------------------------------
+#                awscli | tags                                      |
+#--------------------------------------------------------------------
+
+# add tags to ec2 instance from cli:
+
+    $ aws ec2 create-tags --profile admin-sandbox --region eu-west-1 \
+        --resources i-0aae82128e8cc33ec \
+        --tags "$(cat tag_list.json)" 
+
+    where:
+        `tag_list.json`:  json file containing formatted tag list (below)
+    
+            [ 
+                {
+                    "Key": "MPC-AWS-CREATIONDATE",
+                    "Value": "2018-03-29T14:27:30Z"
+                },
+                {
+                    "Key": "Name",
+                    "Value": "NEW RACEMI SERVER"
+                },
+                {
+                    "Key": "MPC-AWS-PRINCIPALID",
+                    "Value": "AROAJHE3JK3V3EITUDTCI:a584376"
+                },
+                {
+                    "Key": "MPC-AWS-OWNER",
+                    "Value": "a584376"
+                }
+            ]
+
